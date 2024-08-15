@@ -1,0 +1,15 @@
+[Unit]
+Description=Status bar for DWM
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+StatndardOutput=journal
+Environment=XAUTHORITY=%h/.Xauthority
+ExecStart=/home/alex/code/dwm_status/status.sh
+Environment=DISPLAY=:0
+Restart=on-failure
+
+[Install]
+WantedBy=graphical-session.target

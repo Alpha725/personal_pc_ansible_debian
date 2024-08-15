@@ -1,0 +1,84 @@
+---
+- name: Manually run dpkg configure 
+  shell: "dpkg --configure -a"
+
+- name: Update all packages to their latest version
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+    update_cache: true
+
+- name: Install DWM dependancies
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - build-essential 
+    - libx11-dev 
+    - libxinerama-dev 
+    - sharutils 
+    - suckless-tools 
+    - libxft-dev 
+    - stterm 
+    - gcc
+    - tmux
+    - sddm
+
+- name: remove KDE  
+  shell: "apt autoremove --purge kde*"
+
+- name: Download DWM scource
+  ansible.builtin.unarchive:
+      src: http://dl.suckless.org/dwm/dwm-6.2.tar.gz
+      dest: /usr/local/src
+      remote_src: yes
+
+- name: Give insecure permissions to an existing file
+  ansible.builtin.file:
+    path: /usr/local/src
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    state: directory
+    recurse: yes
+
+- name: Run 'install' target as root
+  make:
+    chdir: /usr/local/src/dwm-6.2
+    target: install
+
+- name: Install DWM (temp)
+  ansible.builtin.package:
+    name: dwm
+    state: present
+
+- name: backup dwm.desktop
+  ansible.builtin.copy:
+    src: /usr/share/xsessions/dwm.desktop
+    dest: /usr/share/xsessions/dwm.desktop.bak
+    remote_src: yes
+
+- name: Remove DWM (temp)
+  ansible.builtin.package:
+    name: dwm
+    state: absent
+
+- name: backup dwm.desktop
+  ansible.builtin.copy:
+    src: /usr/share/xsessions/dwm.desktop.bak
+    dest: /usr/share/xsessions/dwm.desktop
+    remote_src: yes
+
+- name: Set SDDM as default display manager
+  shell: "dpkg-reconfigure sddm"
+
+- name: Set SDDM configure
+  copy:
+    dest: /etc/sddm.conf
+    content: | 
+      [General]
+      DisplayServer=x11
+      [Theme]
+      Current=maldives
+
+- name: reboot
+  ansible.builtin.reboot:
