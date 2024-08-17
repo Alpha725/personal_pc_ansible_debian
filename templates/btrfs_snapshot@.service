@@ -1,0 +1,9 @@
+[Unit]
+Description=Snapshot BTRFS
+
+[Service]
+Type=oneshot
+ExecStart=/root/code/interval_btrfs_snapshot.sh %I
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,9 @@
+[Unit]
+Description=nightly snapshot
+
+[Timer]
+OnCalendar=*-*-* 00:00:00
+Unit=btrfs_snapshot.service
+
+[Install]
+WantedBy=timers.target

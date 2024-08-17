@@ -1,0 +1,9 @@
+[Unit]
+Description=6 hour snapshot
+
+[Timer]
+OnCalendar=0/6:00:00
+Unit=btrfs_snapshot@12.service
+
+[Install]
+WantedBy=timers.target

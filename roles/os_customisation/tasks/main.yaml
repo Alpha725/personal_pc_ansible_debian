@@ -17,6 +17,14 @@
 
 - name: Create a directory if it does not exist
   ansible.builtin.file:
+    path: /root/code 
+    state: directory
+    mode: '0700'
+    owner: root 
+    group: root 
+
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
     path: /opt/AppImage/ 
     state: directory
     mode: '0700'
@@ -39,7 +47,45 @@
     src: "{{ playbook_dir }}/templates/nvim"
     dest: /home/alex/.config/
 
-- name: Setup DWM status user service 
+- name: Setup custom path and alias files
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/templates/{{ item }}"
+    dest: /home/alex/.config/ 
+    mode: '0700'
+    owner: alex
+    group: alex
+  loop:
+    - custom_path.sh
+    - custom_alias.sh
+ 
+
+- name: Ensure custom alias is added
+  ansible.builtin.lineinfile:
+    path: ~/.profile
+    line: 'source ~/.config/custom_path.sh'
+    state: present
+    create: yes
+
+- name: Ensure custom alias is added
+  ansible.builtin.lineinfile:
+    path: /home/alex/.profile
+    line: 'source ~/.config/custom_alias.sh'
+    state: present
+    create: yes
+
+- name: Ensure custom alias is added
+  ansible.builtin.lineinfile:
+    path: /home/alex/.profile
+    line: 'source ~/.config/custom_path.sh'
+    state: present
+    create: yes
+
+- name: Clearing dmenu cache
+  ansible.builtin.file:
+    path: /home/alex/.cache/dmenu_run
+    state: absent
+
+- name: Setup custom services 
   ansible.builtin.copy:
     src: "{{ playbook_dir }}/templates/{{ item.file }}"
     dest: "{{ item.dest }}"
@@ -49,8 +95,22 @@
   loop:
     - {file: "dwm_status.service", dest: "/home/alex/.config/systemd/user/"}
     - {file: "status.sh", dest: "/home/alex/code/dwm_status/"}
+    - {file: "daily_btrfs_snapshot.sh", dest: "/root/code/"}
+    - {file: "btrfs_snapshot.service", dest: "/etc/systemd/system/"}
+    - {file: "btrfs_snapshot.timer", dest: "/etc/systemd/system/"}
+    - {file: "btrfs_snapshot@.service", dest: "/etc/systemd/system/"}
+    - {file: "6_hour_snapshot.timer", dest: "/etc/systemd/system/"}
+
+- name: Enable btrfs snapshots
+  shell: "systemctl enable --now {{ item }}"
+  loop:
+    - btrfs_snapshot.timer
+    - 6_hour_snapshot.timer 
 
 - name: Enable status service 
-  shell: "systemctl --user start dwm_status.service"
+  shell: "systemctl --user enable --now dwm_status.service"
   become: no
+  loop:
+    - "systemctl --user enable dwm_status.service"
+    - "systemctl --user start dwm_status.service"
 

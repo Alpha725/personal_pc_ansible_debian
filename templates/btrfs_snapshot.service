@@ -1,0 +1,9 @@
+[Unit]
+Description=Snapshot BTRFS
+
+[Service]
+Type=oneshot
+ExecStart=/root/code/daily_btrfs_snapshot.sh
+
+[Install]
+WantedBy=multi-user.target
