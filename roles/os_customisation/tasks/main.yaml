@@ -46,6 +46,9 @@
   ansible.builtin.copy:
     src: "{{ playbook_dir }}/templates/nvim"
     dest: "/home/{{ ansible_user }}/.config/"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
 
 - name: Setup custom path and alias files
   ansible.builtin.copy:
