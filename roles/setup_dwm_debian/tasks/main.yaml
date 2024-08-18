@@ -2,11 +2,14 @@
 - name: Manually run dpkg configure 
   shell: "dpkg --configure -a"
 
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+
 - name: Update all packages to their latest version
   ansible.builtin.apt:
     name: "*"
     state: latest
-    update_cache: true
 
 - name: Install DWM dependancies
   ansible.builtin.package:
@@ -24,8 +27,38 @@
     - tmux
     - sddm
 
-- name: remove KDE  
-  shell: "apt autoremove --purge kde*"
+- name: Remove GNOME desktop environment packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: absent
+    purge: yes
+  loop:
+    - gnome-shell
+    - gnome-control-center
+    - gnome-settings-daemon
+    - gnome-tweaks
+    - gnome-terminal
+    - gnome-backgrounds
+    - gnome-themes-extra
+ 
+
+- name: Remove KDE Plasma desktop environment packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: absent
+    purge: yes
+  loop:
+    - plasma-desktop
+    - kde-plasma-desktop
+    - plasma-workspace
+    - konsole
+    - dolphin
+    - kdeconnect
+ 
+- name: Remove unused dependencies
+  ansible.builtin.apt:
+    autoremove: yes
+    autoclean: yes
 
 - name: Download DWM scource
   ansible.builtin.unarchive:
@@ -68,8 +101,16 @@
     dest: /usr/share/xsessions/dwm.desktop
     remote_src: yes
 
-- name: Set SDDM as default display manager
-  shell: "dpkg-reconfigure sddm"
+- name: Set sddm as the defualt manager 
+  ansible.builtin.copy:
+    dest: /etc/X11/default-display-manager 
+    content: "/usr/bin/sddm"
+    mode: '0644'
+
+- name: Reconfigure dpkg with special sauce
+  shell: |
+    export DEBIAN_FRONTEND=noninteractive
+    dpkg-reconfigure sddm
 
 - name: Set SDDM configure
   copy:
@@ -79,6 +120,3 @@
       DisplayServer=x11
       [Theme]
       Current=maldives
-
-- name: reboot
-  ansible.builtin.reboot:

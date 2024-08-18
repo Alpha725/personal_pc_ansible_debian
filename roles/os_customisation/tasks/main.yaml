@@ -1,7 +1,7 @@
 ---
-- name: Create a SSH key for alex 
+- name: Create a SSH key for "{{ ansible_user }}" 
   ansible.builtin.user:
-    name: alex 
+    name: "{{ ansible_user }}" 
     generate_ssh_key: yes
     ssh_key_bits: 2048
     ssh_key_file: .ssh/id_rsa
@@ -12,8 +12,8 @@
     dest: /opt
     remote_src: yes
     mode: '0700'
-    owner: alex
-    group: alex
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
 
 - name: Create a directory if it does not exist
   ansible.builtin.file:
@@ -28,8 +28,8 @@
     path: /opt/AppImage/ 
     state: directory
     mode: '0700'
-    owner: alex
-    group: alex
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
 
 - name: Download Obsidian
   ansible.builtin.get_url:
@@ -42,18 +42,18 @@
     dest: /etc/profile.d/00-nvim.sh
     content: 'PATH=$PATH:/opt/nvim-linux64/bin:/opt/AppImage'
 
-- name: set nvim config
+- name: set nvim config in /home/{{ ansible_user }}/.config/
   ansible.builtin.copy:
     src: "{{ playbook_dir }}/templates/nvim"
-    dest: /home/alex/.config/
+    dest: "/home/{{ ansible_user }}/.config/"
 
 - name: Setup custom path and alias files
   ansible.builtin.copy:
     src: "{{ playbook_dir }}/templates/{{ item }}"
-    dest: /home/alex/.config/ 
+    dest: "/home/{{ ansible_user }}/.config/"
     mode: '0700'
-    owner: alex
-    group: alex
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
   loop:
     - custom_path.sh
     - custom_alias.sh
@@ -68,7 +68,7 @@
 
 - name: Ensure custom alias is added
   ansible.builtin.lineinfile:
-    path: "/home/alex/.{{ item }}" 
+    path: "/home/{{ ansible_user }}/.{{ item }}" 
     line: 'source ~/.config/custom_alias.sh'
     state: present
     create: yes
@@ -78,7 +78,7 @@
 
 - name: Ensure custom alias is added
   ansible.builtin.lineinfile:
-    path: "/home/alex/.{{ item }}" 
+    path: "/home/{{ ansible_user }}/.{{ item }}" 
     line: 'source ~/.config/custom_path.sh'
     state: present
     create: yes
@@ -88,7 +88,7 @@
 
 - name: Clearing dmenu cache
   ansible.builtin.file:
-    path: /home/alex/.cache/dmenu_run
+    path: "/home/{{ ansible_user }}/.cache/dmenu_run"
     state: absent
 
 - name: Setup custom services 
@@ -96,11 +96,11 @@
     src: "{{ playbook_dir }}/templates/{{ item.file }}"
     dest: "{{ item.dest }}"
     mode: '0700'
-    owner: alex
-    group: alex
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
   loop:
-    - {file: "dwm_status.service", dest: "/home/alex/.config/systemd/user/"}
-    - {file: "status.sh", dest: "/home/alex/code/dwm_status/"}
+    - {file: "dwm_status.service", dest: "/home/{{ ansible_user }}/.config/systemd/user/"}
+    - {file: "status.sh", dest: "/home/{{ ansible_user }}/code/dwm_status/"}
     - {file: "daily_btrfs_snapshot.sh", dest: "/root/code/"}
     - {file: "btrfs_snapshot.service", dest: "/etc/systemd/system/"}
     - {file: "btrfs_snapshot.timer", dest: "/etc/systemd/system/"}
