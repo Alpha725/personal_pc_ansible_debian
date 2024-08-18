@@ -68,17 +68,23 @@
 
 - name: Ensure custom alias is added
   ansible.builtin.lineinfile:
-    path: /home/alex/.profile
+    path: "/home/alex/.{{ item }}" 
     line: 'source ~/.config/custom_alias.sh'
     state: present
     create: yes
+  loop:
+    - profile
+    - bashrc
 
 - name: Ensure custom alias is added
   ansible.builtin.lineinfile:
-    path: /home/alex/.profile
+    path: "/home/alex/.{{ item }}" 
     line: 'source ~/.config/custom_path.sh'
     state: present
     create: yes
+  loop:
+    - profile
+    - bashrc
 
 - name: Clearing dmenu cache
   ansible.builtin.file:
