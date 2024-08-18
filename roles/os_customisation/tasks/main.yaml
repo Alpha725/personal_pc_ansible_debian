@@ -15,6 +15,15 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
 
+- name: Install user apps
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - gimp
+    - scrot
+    - feh
+
 - name: Create a directory if it does not exist
   ansible.builtin.file:
     path: /root/code 
@@ -60,34 +69,19 @@
   loop:
     - custom_path.sh
     - custom_alias.sh
- 
 
 - name: Ensure custom alias is added
   ansible.builtin.lineinfile:
-    path: ~/.profile
-    line: 'source ~/.config/custom_path.sh'
-    state: present
-    create: yes
-
-- name: Ensure custom alias is added
-  ansible.builtin.lineinfile:
-    path: "/home/{{ ansible_user }}/.{{ item }}" 
-    line: 'source ~/.config/custom_alias.sh'
+    path: "/home/{{ ansible_user }}/{{ item.file }}" 
+    line: "{{ item.line }}"
     state: present
     create: yes
   loop:
-    - profile
-    - bashrc
-
-- name: Ensure custom alias is added
-  ansible.builtin.lineinfile:
-    path: "/home/{{ ansible_user }}/.{{ item }}" 
-    line: 'source ~/.config/custom_path.sh'
-    state: present
-    create: yes
-  loop:
-    - profile
-    - bashrc
+    - {file: ".profile", line: "source ~/.config/custom_alias.sh"}
+    - {file: ".bashrc", line: "source ~/.config/custom_alias.sh"}
+    - {file: ".profile", line: "source ~/.config/custom_path.sh"}
+    - {file: ".bashrc", line: "source ~/.config/custom_path.sh"}
+    - {file: ".profile", line: "feh --bg-scale https://w.wallhaven.cc/full/dp/wallhaven-dp3plm.jpg"}
 
 - name: Clearing dmenu cache
   ansible.builtin.file:
