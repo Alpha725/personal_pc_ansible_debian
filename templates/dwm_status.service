@@ -1,7 +1,7 @@
 [Unit]
 Description=Status bar for DWM
-After=graphical-session.target
-PartOf=graphical-session.target
+After=graphical.target
+PartOf=graphical.target
 
 [Service]
 Type=simple
@@ -12,4 +12,4 @@ Environment=DISPLAY=:0
 Restart=on-failure
 
 [Install]
-WantedBy=graphical-session.target
+WantedBy=graphical.target

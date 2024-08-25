@@ -23,6 +23,7 @@
     - gimp
     - scrot
     - feh
+    - alsa-utils
 
 - name: Create a directory if it does not exist
   ansible.builtin.file:
@@ -111,9 +112,10 @@
     - 6_hour_snapshot.timer 
 
 - name: Enable status service 
-  shell: "systemctl --user enable --now dwm_status.service"
+  shell: "{{ item }}"
   become: no
   loop:
     - "systemctl --user enable dwm_status.service"
+    - "systemctl --user daemon-reload"
     - "systemctl --user start dwm_status.service"
 
