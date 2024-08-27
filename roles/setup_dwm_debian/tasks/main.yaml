@@ -13,19 +13,8 @@
 
 - name: Install DWM dependancies
   ansible.builtin.package:
-    name: "{{ item }}"
+    name: "{{ dwm_dependant_packages }}"
     state: present
-  loop:
-    - build-essential 
-    - libx11-dev 
-    - libxinerama-dev 
-    - sharutils 
-    - suckless-tools 
-    - libxft-dev 
-    - stterm 
-    - gcc
-    - tmux
-    - sddm
 
 - name: Remove GNOME desktop environment packages
   ansible.builtin.apt:
@@ -62,7 +51,7 @@
 
 - name: Download DWM scource
   ansible.builtin.unarchive:
-      src: http://dl.suckless.org/dwm/dwm-6.2.tar.gz
+      src: "http://dl.suckless.org/dwm/dwm-{{ dwm_version }}.tar.gz"
       dest: /usr/local/src
       remote_src: yes
 
@@ -76,7 +65,7 @@
 
 - name: Run 'install' target as root
   make:
-    chdir: /usr/local/src/dwm-6.2
+    chdir: "/usr/local/src/dwm-{{ dwm_version }}"
     target: install
 
 - name: Install DWM (temp)

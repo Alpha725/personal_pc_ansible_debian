@@ -2,7 +2,8 @@ all:
   children:
     dwm:
       hosts:
-        10.0.0.230:
+        192.168.100.249:
       vars:
         ansible_user: alex 
+        dwm_version: 6.5
         timezone: Australia/Sydney
