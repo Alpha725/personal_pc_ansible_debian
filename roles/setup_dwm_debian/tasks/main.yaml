@@ -13,8 +13,9 @@
 
 - name: Install DWM dependancies
   ansible.builtin.package:
-    name: "{{ dwm_dependant_packages }}"
+    name: "{{ item }}"
     state: present
+  loop: "{{ dwm_dependant_packages }}"
 
 - name: Remove GNOME desktop environment packages
   ansible.builtin.apt:
