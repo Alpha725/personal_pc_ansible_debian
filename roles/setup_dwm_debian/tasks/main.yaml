@@ -2,15 +2,6 @@
 - name: Manually run dpkg configure 
   shell: "dpkg --configure -a"
 
-- name: Update apt cache
-  ansible.builtin.apt:
-    update_cache: yes
-
-- name: Update all packages to their latest version
-  ansible.builtin.apt:
-    name: "*"
-    state: latest
-
 - name: Install DWM dependancies
   ansible.builtin.package:
     name: "{{ item }}"

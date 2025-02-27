@@ -6,26 +6,7 @@
     ssh_key_bits: 2048
     ssh_key_file: .ssh/id_rsa
 
-- name: Download and extract nvim
-  ansible.builtin.unarchive:
-    src: https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz
-    dest: /opt
-    remote_src: yes
-    mode: '0700'
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-
-- name: Install user apps
-  ansible.builtin.apt:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - gimp
-    - scrot
-    - feh
-    - alsa-utils
-
-- name: Create a directory if it does not exist
+- name: Create root code directory 
   ansible.builtin.file:
     path: /root/code 
     state: directory
@@ -33,7 +14,7 @@
     owner: root 
     group: root 
 
-- name: Create a directory if it does not exist
+- name: Create AppImage directory
   ansible.builtin.file:
     path: /opt/AppImage/ 
     state: directory
@@ -41,28 +22,9 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
 
-- name: Download Obsidian
-  ansible.builtin.get_url:
-    url: https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.7/Obsidian-1.6.7.AppImage
-    dest: /opt/AppImage/
-    mode: '0555'
-
-- name: Add nvim to $PATH
-  ansible.builtin.copy:
-    dest: /etc/profile.d/00-nvim.sh
-    content: 'PATH=$PATH:/opt/nvim-linux64/bin:/opt/AppImage'
-
-- name: set nvim config in /home/{{ ansible_user }}/.config/
-  ansible.builtin.copy:
-    src: "{{ playbook_dir }}/templates/nvim"
-    dest: "/home/{{ ansible_user }}/.config/"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-
-
 - name: Setup custom path and alias files
   ansible.builtin.copy:
-    src: "{{ playbook_dir }}/templates/{{ item }}"
+    src: "{{ role_path }}/templates/{{ item }}"
     dest: "/home/{{ ansible_user }}/.config/"
     mode: '0700'
     owner: "{{ ansible_user }}"
@@ -78,11 +40,12 @@
     state: present
     create: yes
   loop:
-    - {file: ".profile", line: "source ~/.config/custom_alias.sh"}
-    - {file: ".bashrc", line: "source ~/.config/custom_alias.sh"}
-    - {file: ".profile", line: "source ~/.config/custom_path.sh"}
-    - {file: ".bashrc", line: "source ~/.config/custom_path.sh"}
+    - {file: ".profile", line: ". ~/.config/custom_alias.sh"}
+    - {file: ".bashrc", line: ". ~/.config/custom_alias.sh"}
+    - {file: ".profile", line: ". ~/.config/custom_path.sh"}
+    - {file: ".bashrc", line: ". ~/.config/custom_path.sh"}
     - {file: ".profile", line: "feh --bg-scale https://w.wallhaven.cc/full/dp/wallhaven-dp3plm.jpg"}
+    - {file: ".profile", line: "systemctl --user start dwm_status"}
 
 - name: Clearing dmenu cache
   ansible.builtin.file:
@@ -91,7 +54,7 @@
 
 - name: Setup custom services 
   ansible.builtin.copy:
-    src: "{{ playbook_dir }}/templates/{{ item.file }}"
+    src: "{{ role_path }}/templates/{{ item.file }}"
     dest: "{{ item.dest }}"
     mode: '0700'
     owner: "{{ ansible_user }}"
@@ -119,3 +82,57 @@
     - "systemctl --user daemon-reload"
     - "systemctl --user start dwm_status.service"
 
+- name: Download Obsidian
+  ansible.builtin.get_url:
+    url: https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.7/Obsidian-1.6.7.AppImage
+    dest: /opt/AppImage/
+    mode: '0555'
+
+- name: Download content creation AppImages 
+  ansible.builtin.get_url:
+    url: "{{ item }}" 
+    dest: /opt/AppImage/
+    mode: '0555'
+  when: content_creation is defined and content_creation | bool
+  loop:
+    - https://github.com/audacity/audacity/releases/download/Audacity-3.7.1/audacity-linux-3.7.1-x64-22.04.AppImage
+    - https://download.kde.org/stable/kdenlive/24.12/linux/kdenlive-24.12.2-x86_64.AppImage 
+
+- name: Download and extract nvim
+  ansible.builtin.unarchive:
+    src: https://github.com/neovim/neovim/releases/download/v0.10.4/nvim-linux-x86_64.tar.gz 
+    dest: /opt
+    remote_src: yes
+    mode: '0700'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Add nvim to $PATH
+  ansible.builtin.copy:
+    dest: /etc/profile.d/00-nvim.sh
+    content: 'PATH=$PATH:/opt/nvim-linux-x86_64/bin:/opt/AppImage'
+
+- name: Clone NvChad to ~/.config
+  ansible.builtin.git: 
+    repo: 'https://github.com/NvChad/starter'
+    dest: "/home/{{ ansible_user }}/.config/nvim"
+  become_user: "{{ ansible_user }}"
+
+- name: Install user apps
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - gimp
+    - scrot
+    - feh
+    - alsa-utils
+    - tmux
+
+- name: Install content creation packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  when: content_creation is defined and content_creation | bool
+  loop:
+    - obs-studio

@@ -1,6 +1,10 @@
 - hosts: all
   become: yes
   tasks:
+
+  - include_role:
+      name: patch
+
   - include_role:
       name: set_timezone
 

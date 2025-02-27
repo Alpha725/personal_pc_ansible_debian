@@ -8,7 +8,6 @@ dwm_dependant_packages:
   - libxft-dev 
   - stterm 
   - gcc
-  - tmux
   - sddm
 
 

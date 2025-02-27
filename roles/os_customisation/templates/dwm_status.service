@@ -5,7 +5,6 @@ PartOf=graphical.target
 
 [Service]
 Type=simple
-StatndardOutput=journal
 Environment=XAUTHORITY=%h/.Xauthority
 ExecStart=/home/alex/code/dwm_status/status.sh
 Environment=DISPLAY=:0
