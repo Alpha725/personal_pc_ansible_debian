@@ -1,5 +1,0 @@
-- hosts: all
-  become: yes
-  tasks:
-  - include_role:
-      name: os_customisation
