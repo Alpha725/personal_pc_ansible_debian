@@ -14,10 +14,10 @@ You will then need to update the `hosts.yaml` ansible_user to your `${username}`
 
 Once you have done all the above run the following command:
 ```bash
-ansible-playbook -i hosts.yaml site.yaml
+ansible-playbook site.yaml
 ```
-If you have specify the key manually for any reason use the following:
+If you have specify the key manually for any reason update the private_key_file var in ansible.cfg:
 ```bash
-ansible-playbook -i hosts.yaml --private-key=${path_to_key_here} site.yaml
+private_key_file = /to/where/key/is/id_rsa
 ```
 
